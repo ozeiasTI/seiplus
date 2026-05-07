@@ -1,0 +1,1352 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SEI PLUS - Sistema Avançado de Fluxos Processuais" />
+  <title>SEI PLUS - Fluxos Processuais</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    #logo {
+      width: 60px;
+      height: 60px;
+    }
+
+    .welcome-logo {
+      width: 500px;
+      height: auto;
+      margin: 24px 0;
+    }
+
+    .legend {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .legend-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      width: fit-content;
+      max-width: 220px;
+    }
+
+    .legend-item strong {
+      font-size: 0.95rem;
+    }
+
+    .legend-item small {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .legend-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .legend-item.edit {
+      background: rgba(59, 130, 246, 0.08);
+      border-left: 4px solid #3b82f6;
+    }
+
+    .legend-item.clone {
+      background: rgba(139, 92, 246, 0.08);
+      border-left: 4px solid #8b5cf6;
+    }
+
+    .legend-item.delete {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 4px solid #ef4444;
+    }
+
+    .legend-item.select {
+      background: rgba(16, 185, 129, 0.08);
+      border-left: 4px solid #10b981;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon"><img src="favicon.png" id="logo" /></div>
+        <div class="brand-text">
+          <h1>SEI PLUS</h1>
+          <span>v2.0</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <a href="#" class="menu-item active" data-page="home">
+          <span class="icon">🏠</span>
+          <span class="label">Início</span>
+        </a>
+        <a href="#" class="menu-item" data-page="processos">
+          <span class="icon">📚</span>
+          <span class="label">Processos</span>
+        </a>
+        <a href="#" class="menu-item" data-page="novo">
+          <span class="icon">✨</span>
+          <span class="label">Novo Fluxo</span>
+        </a>
+        <a href="#" class="menu-item" data-page="criacao">
+          <span class="icon">🌟</span>
+          <span class="label">Criação</span>
+        </a>
+        <a href="#" class="menu-item" data-page="instrucoes">
+          <span class="icon">📖</span>
+          <span class="label">Instruções</span>
+        </a>
+        <a href="#" class="menu-item" data-page="config">
+          <span class="icon">⚙️</span>
+          <span class="label">Configurações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Desenvolvido por</p>
+        <strong>OZEIAS SOUZA</strong>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <h2 id="page-title">Bem-vindo ao SEI PLUS</h2>
+          <p id="page-subtitle">
+            Gerencie seus fluxos processuais com facilidade
+          </p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-icon" id="btn-search" title="Buscar">🔍</button>
+          <button class="btn-icon" id="btn-help" title="Ajuda">❓</button>
+        </div>
+      </header>
+
+      <!-- Search Modal -->
+      <div id="search-modal" class="modal" style="display: none">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Buscar Fluxo</h3>
+            <button class="btn-close">&times;</button>
+          </div>
+          <input type="text" id="search-input" class="search-input" placeholder="Digite o nome do processo..." />
+          <div id="search-results" class="search-results"></div>
+        </div>
+      </div>
+
+      <!-- Pages -->
+      <div class="pages-container">
+        <!-- Home Page -->
+        <div id="page-home" class="page active">
+          <div class="welcome-section">
+            <img src="logo.png" alt="SEI PLUS Logo" class="welcome-logo" />
+            <div class="quick-actions">
+              <button class="btn btn-primary btn-lg" id="btn-novo-fluxo">
+                ✨ Criar Novo Fluxo
+              </button>
+              <button class="btn btn-secondary btn-lg" id="btn-explorar">
+                📚 Explorar Processos
+              </button>
+              <button class="btn btn-terciario btn-lg" style="color: #fff" id="btn-instrucoes">
+                📖 Instruções
+              </button>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">📋</div>
+              <div class="stat-info">
+                <div class="stat-value" id="stat-processos">0</div>
+                <div class="stat-label">Processos</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🔄</div>
+              <div class="stat-info">
+                <div class="stat-value" id="stat-etapas">0</div>
+                <div class="stat-label">Etapas Totais</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📊</div>
+              <div class="stat-content">
+                <div class="stat-value" id="stat-tamanho">0KB</div>
+                <div class="stat-label">Tamanho dos Dados</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⚡</div>
+              <div class="stat-content">
+                <div class="stat-value" id="stat-atalhos">0</div>
+                <div class="stat-label">Atalhos</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🔀</div>
+              <div class="stat-content">
+                <div class="stat-value" id="stat-decisoes">0</div>
+                <div class="stat-label">Decisões</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Processos Page -->
+        <div id="page-processos" class="page">
+          <div class="page-header">
+            <input type="text" id="filter-processos" class="input-filter" placeholder="Filtrar processos..." />
+            <div class="processos-actions">
+              <button class="btn btn-primary" id="btn-add-fluxo">
+                ✨ Criar Novo Fluxo
+              </button>
+              <button class="btn btn-terciario" id="btn-pdf-selected" style="color: #fff">
+                📄 Gerar PDF Selecionados
+              </button>
+              <button class="btn btn-primary" id="btn-export-selected">
+                📤 Exportar Selecionados
+              </button>
+            </div>
+          </div>
+          <div class="legend">
+            <div class="legend-title">Ações Rápidas</div>
+
+            <div class="legend-items">
+
+              <span class="legend-item edit">
+                <strong>✏️ Editar</strong>
+                <small>Alterar informações do fluxo</small>
+              </span>
+
+              <span class="legend-item clone">
+                <strong>👯 Duplicar</strong>
+                <small>Criar uma cópia rapidamente</small>
+              </span>
+
+              <span class="legend-item delete">
+                <strong>🗑️ Excluir</strong>
+                <small>Remover fluxo permanentemente</small>
+              </span>
+
+              <span class="legend-item select">
+                <strong>☑️ Selecionar</strong>
+                <small>Marque um ou mais fluxos para exportação</small>
+              </span>
+
+            </div>
+          </div>
+          <div id="processos-list" class="processos-list"></div>
+        </div>
+
+        <!-- Novo Fluxo Page -->
+        <div id="page-novo" class="page">
+          <div class="legend">
+            <div class="legend-title">Como Montar um Fluxo</div>
+
+            <div class="legend-items">
+
+              <span class="legend-item edit">
+                <strong>📝 Informações Básicas</strong>
+                <small>Defina nome, subtipo e descrição do processo</small>
+              </span>
+
+              <span class="legend-item clone">
+                <strong>🔄 Etapas do Fluxo</strong>
+                <small>Adicione todas as ações e decisões do processo</small>
+              </span>
+
+              <span class="legend-item select">
+                <strong>⚡ Tipos Inteligentes</strong>
+                <small>Use texto, decisão, triagem, checklist e mais</small>
+              </span>
+
+              <span class="legend-item delete">
+                <strong>💾 Salvamento</strong>
+                <small>Finalize e salve o fluxo para uso imediato</small>
+              </span>
+
+            </div>
+          </div>
+
+          <div class="form-container">
+            <div class="form-section">
+              <h3>Informações Básicas</h3>
+              <div class="form-group">
+                <label>Nome do Processo *</label>
+                <input type="text" id="form-processo" class="input" placeholder="Ex: Doação, Compra, etc" />
+              </div>
+              <div class="form-group">
+                <label>Subtipo *</label>
+                <input type="text" id="form-subtipo" class="input" placeholder="Ex: Consumo, Permanente, etc" />
+              </div>
+              <div class="form-group">
+                <label>Descrição</label>
+                <textarea id="form-descricao" class="textarea" placeholder="Descrição do fluxo processual"></textarea>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <div class="section-header">
+                <h3>Etapas do Fluxo</h3>
+                <button class="btn btn-sm btn-accent" id="btn-add-etapa">
+                  + Adicionar Etapa
+                </button>
+              </div>
+              <div id="etapas-container" class="etapas-container"></div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary btn-lg" id="btn-salvar-novo">
+                Salvar Fluxo
+              </button>
+              <button class="btn btn-secondary btn-lg" id="btn-cancelar-novo">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instruções Page -->
+        <div id="page-instrucoes" class="page">
+          <style>
+            .instrucoes-container {
+              color: var(--text-primary);
+              line-height: 1.6;
+              padding: 0 10px;
+            }
+
+            .instrucoes-container .content-section {
+              background: var(--bg-primary);
+              border-radius: var(--radius);
+              padding: 2.5rem;
+              margin-bottom: 2.5rem;
+              box-shadow: var(--shadow-md);
+              border: 1px solid var(--border);
+            }
+
+            .instrucoes-container .section-title {
+              font-size: 2rem;
+              font-weight: 700;
+              margin-bottom: 1.5rem;
+              color: var(--primary);
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+            }
+
+            .instrucoes-container .section-subtitle {
+              font-size: 1.4rem;
+              font-weight: 600;
+              margin: 2.5rem 0 1.25rem 0;
+              border-left: 5px solid var(--primary);
+              padding-left: 1.25rem;
+            }
+
+            .instrucoes-container .card-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 2rem;
+              margin-bottom: 2.5rem;
+            }
+
+            .instrucoes-container .card {
+              background: var(--bg-secondary);
+              border-radius: var(--radius);
+              padding: 1.75rem;
+              border-left: 5px solid var(--primary);
+              transition: all 0.3s ease;
+            }
+
+            .instrucoes-container .card:hover {
+              transform: translateY(-8px);
+              box-shadow: var(--shadow-lg);
+            }
+
+            .instrucoes-container .card-title {
+              font-size: 1.3rem;
+              font-weight: 700;
+              margin-bottom: 0.75rem;
+            }
+
+            .instrucoes-container .card-icon {
+              font-size: 2.5rem;
+              margin-bottom: 1.25rem;
+            }
+
+            .instrucoes-container .steps {
+              margin: 2.5rem 0;
+            }
+
+            .instrucoes-container .step {
+              display: flex;
+              gap: 2rem;
+              margin-bottom: 2rem;
+              padding: 2rem;
+              background: var(--bg-secondary);
+              border-radius: var(--radius);
+              border: 1px solid var(--border);
+            }
+
+            .instrucoes-container .step-number {
+              flex-shrink: 0;
+              width: 48px;
+              height: 48px;
+              background: var(--primary);
+              color: white;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: 800;
+              font-size: 1.25rem;
+            }
+
+            .instrucoes-container .alert {
+              padding: 1.75rem;
+              border-radius: var(--radius);
+              margin: 2rem 0;
+              border-left: 5px solid;
+              display: flex;
+              gap: 1.25rem;
+            }
+
+            .instrucoes-container .alert-info {
+              background: rgba(0, 102, 204, 0.08);
+              border-left-color: var(--primary);
+            }
+
+            .instrucoes-container .alert-warning {
+              background: rgba(245, 158, 11, 0.08);
+              border-left-color: var(--warning);
+            }
+
+            .instrucoes-container .alert-success {
+              background: rgba(16, 185, 129, 0.08);
+              border-left-color: var(--success);
+            }
+
+            .instrucoes-container .alert-danger {
+              background: rgba(239, 68, 68, 0.08);
+              border-left-color: var(--danger);
+            }
+
+            .instrucoes-container .table-responsive {
+              overflow-x: auto;
+              margin: 2rem 0;
+              border-radius: var(--radius-sm);
+              border: 1px solid var(--border);
+            }
+
+            .instrucoes-container table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+
+            .instrucoes-container th {
+              background: var(--primary);
+              color: white;
+              padding: 1.25rem;
+              text-align: left;
+              font-weight: 600;
+            }
+
+            .instrucoes-container td {
+              padding: 1rem 1.25rem;
+              border-bottom: 1px solid var(--border);
+              color: var(--text-secondary);
+            }
+
+            .instrucoes-container tr:last-child td {
+              border-bottom: none;
+            }
+
+            .instrucoes-container tr:hover td {
+              background: var(--bg-secondary);
+            }
+
+            .instrucoes-container .kbd {
+              background: #f1f1f1;
+              border: 1px solid #ccc;
+              border-bottom-width: 3px;
+              border-radius: 5px;
+              padding: 0.25rem 0.6rem;
+              font-family: "Inter", monospace;
+              font-size: 0.9rem;
+              font-weight: 700;
+              color: #333;
+            }
+
+            .instrucoes-container .comparison {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 2.5rem;
+              margin: 2.5rem 0;
+            }
+
+            .instrucoes-container .comparison-do {
+              background: rgba(0, 204, 136, 0.05);
+              border: 2px solid var(--success);
+              padding: 2rem;
+              border-radius: var(--radius);
+            }
+
+            .instrucoes-container .comparison-dont {
+              background: rgba(255, 51, 51, 0.05);
+              border: 2px solid var(--danger);
+              padding: 2rem;
+              border-radius: var(--radius);
+            }
+
+            .instrucoes-container .comparison h3 {
+              margin-bottom: 1.25rem;
+            }
+
+            .instrucoes-container .comparison ul {
+              padding-left: 1.5rem;
+            }
+
+            .instrucoes-container .comparison li {
+              margin-bottom: 0.75rem;
+            }
+
+            .instrucoes-container .faq-item {
+              margin-bottom: 1.25rem;
+              border: 1px solid var(--border);
+              border-radius: var(--radius);
+              overflow: hidden;
+              transition: all 0.3s ease;
+            }
+
+            .instrucoes-container .faq-question {
+              background: var(--bg-secondary);
+              padding: 1.25rem 1.75rem;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              cursor: pointer;
+              font-weight: 600;
+              font-size: 1.1rem;
+            }
+
+            .instrucoes-container .faq-question:hover {
+              background: var(--bg-tertiary);
+            }
+
+            .instrucoes-container .faq-answer {
+              padding: 0;
+              max-height: 0;
+              overflow: hidden;
+              transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+              background: var(--bg-primary);
+              color: var(--text-secondary);
+            }
+
+            .instrucoes-container .faq-answer.active {
+              padding: 1.75rem;
+              max-height: 800px;
+              border-top: 1px solid var(--border);
+            }
+
+            .instrucoes-container .badge {
+              display: inline-block;
+              padding: 0.35rem 1rem;
+              border-radius: 30px;
+              font-size: 0.85rem;
+              font-weight: 700;
+              background: var(--primary-light);
+              color: var(--primary);
+            }
+
+            .instrucoes-container .hero {
+              background: linear-gradient(135deg,
+                  var(--primary) 0%,
+                  var(--primary-dark) 100%);
+              border-radius: var(--radius);
+              padding: 4rem 2rem;
+              margin-bottom: 3rem;
+              text-align: center;
+              color: white;
+              box-shadow: var(--shadow-lg);
+            }
+
+            .instrucoes-container .hero h1 {
+              font-size: 3rem;
+              margin-bottom: 1rem;
+              color: white;
+            }
+
+            .instrucoes-container .hero p {
+              font-size: 1.25rem;
+              opacity: 0.9;
+              margin-bottom: 0;
+            }
+          </style>
+          <div class="instrucoes-container">
+            <div class="hero">
+              <h1>Manual do Usuário</h1>
+              <p>Tudo o que você precisa saber para dominar o SEI PLUS v2.0</p>
+            </div>
+
+            <div class="content-section" style="border: 2px solid var(--primary)">
+              <h2 class="section-title">🧩 Extensão Oficial do SEI PLUS</h2>
+
+              <div class="alert alert-warning">
+                <strong>⚠️ Atenção:</strong> A extensão funciona apenas em
+                conjunto com o sistema SEI PLUS aberto neste site.
+              </div>
+
+              <p style="font-size: 1.1rem; margin-bottom: 20px">
+                Para uma experiência completa e mais produtiva, recomendamos
+                instalar a extensão oficial do SEI PLUS no navegador. Com ela,
+                você poderá acessar seus fluxos de forma rápida, visualizar em
+                lista ou fluxograma e até exportar como imagem.
+              </p>
+
+              <div class="card-grid">
+                <div class="card">
+                  <div class="card-icon">⚡</div>
+                  <div class="card-title">Acesso Rápido</div>
+                  <div class="card-description">
+                    Visualize seus fluxos diretamente pelo navegador, sem
+                    precisar abrir o sistema toda hora.
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-icon">📊</div>
+                  <div class="card-title">Fluxograma Automático</div>
+                  <div class="card-description">
+                    Veja seus processos em formato visual com geração
+                    automática de diagramas.
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-icon">📥</div>
+                  <div class="card-title">Exportar PNG</div>
+                  <div class="card-description">
+                    Baixe fluxos como imagem com apenas um clique.
+                  </div>
+                </div>
+              </div>
+
+              <div style="text-align: center; margin-top: 30px">
+                <a href="https://chromewebstore.google.com/" target="_blank" class="btn btn-primary btn-lg"
+                  style="font-size: 1.2rem">
+                  🧩 Baixar Extensão na Chrome Web Store
+                </a>
+                <p style="
+                      margin-top: 10px;
+                      font-size: 0.9rem;
+                      color: var(--text-secondary);
+                    ">
+                  (Disponível para Google Chrome)
+                </p>
+              </div>
+
+              <div class="alert alert-info" style="margin-top: 25px">
+                <strong>💡 Como funciona:</strong>
+                A extensão sincroniza automaticamente com este sistema e
+                carrega seus fluxos salvos no navegador.
+              </div>
+            </div>
+
+            <!-- Introdução -->
+            <div class="content-section">
+              <h2 class="section-title">🚀 Primeiros Passos</h2>
+              <p>
+                O <strong>SEI PLUS</strong> é um sistema avançado projetado
+                para facilitar a criação, gerenciamento e visualização de
+                fluxos processuais complexos. Com uma interface intuitiva e
+                recursos poderosos como o autocomplete dinâmico e visualização
+                em fluxograma, ele transforma a maneira como você organiza
+                seus processos.
+              </p>
+              <br />
+
+              <div class="card-grid">
+                <div class="card">
+                  <div class="card-icon">✨</div>
+                  <div class="card-title">Criação de Fluxos</div>
+                  <div class="card-description">
+                    Defina processos e suas etapas de forma lógica e
+                    estruturada, sem complicações técnicas.
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-icon">📊</div>
+                  <div class="card-title">Visualização Dupla</div>
+                  <div class="card-description">
+                    Alterne entre o Modo Lista para execução e o Modo
+                    Fluxograma para visão macro do processo.
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-icon">⚡</div>
+                  <div class="card-title">Autocomplete</div>
+                  <div class="card-description">
+                    Ganhe produtividade usando atalhos de teclado para
+                    preencher textos repetitivos instantaneamente.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Como Criar -->
+            <div class="content-section">
+              <h2 class="section-title">📝 Como Criar um Fluxo</h2>
+              <p>
+                Siga estes passos simples para cadastrar um novo processo no
+                sistema:
+              </p>
+
+              <div class="steps">
+                <div class="step">
+                  <div class="step-number">1</div>
+                  <div class="step-content">
+                    <h3>Informações Básicas</h3>
+                    <p>
+                      Preencha o <strong>Nome do Processo</strong> (ex:
+                      Licitação), o <strong>Subtipo</strong> (ex: Pregão
+                      Eletrônico) e uma <strong>Descrição</strong> opcional
+                      que ajude a identificar o objetivo do fluxo.
+                    </p>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-number">2</div>
+                  <div class="step-content">
+                    <h3>Adicionar Etapas</h3>
+                    <p>
+                      Clique no botão
+                      <span class="badge">+ Adicionar Etapa</span>. Você pode
+                      adicionar quantas etapas forem necessárias para
+                      completar o seu processo.
+                    </p>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-number">3</div>
+                  <div class="step-content">
+                    <h3>Configurar as Etapas</h3>
+                    <p>
+                      Para cada etapa, defina o nome, o conteúdo e o tipo. Se
+                      for uma etapa de <strong>Decisão</strong> ou
+                      <strong>Triagem</strong>, não esqueça de configurar as
+                      opções de resposta e seus destinos.
+                    </p>
+                  </div>
+                </div>
+                <div class="step">
+                  <div class="step-number">4</div>
+                  <div class="step-content">
+                    <h3>Salvar o Fluxo</h3>
+                    <p>
+                      Após revisar todas as etapas, clique em
+                      <span class="badge">Salvar Fluxo</span>. O processo
+                      ficará disponível imediatamente na sua biblioteca.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <h3 class="section-subtitle">Tipos de Etapas Disponíveis</h3>
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Ícone</th>
+                      <th>Descrição</th>
+                      <th>Campos Principais</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Texto</td>
+                      <td>📝</td>
+                      <td>Modelo de documento ou instrução textual.</td>
+                      <td>Título, Conteúdo, Obs</td>
+                    </tr>
+                    <tr>
+                      <td>Anexo</td>
+                      <td>📎</td>
+                      <td>Indicação de documento que deve ser juntado.</td>
+                      <td>Nome do Anexo, Obs</td>
+                    </tr>
+                    <tr>
+                      <td>Decisão</td>
+                      <td>🔀</td>
+                      <td>Pergunta de Sim/Não que ramifica o fluxo.</td>
+                      <td>Pergunta, Próximas Etapas</td>
+                    </tr>
+                    <tr>
+                      <td>Triagem</td>
+                      <td>🔍</td>
+                      <td>Múltiplas opções de escolha para o usuário.</td>
+                      <td>Pergunta, Lista de Opções</td>
+                    </tr>
+                    <tr>
+                      <td>Link</td>
+                      <td>🔗</td>
+                      <td>Acesso direto a recursos externos ou sites.</td>
+                      <td>URL, Descrição</td>
+                    </tr>
+                    <tr>
+                      <td>Alerta</td>
+                      <td>⚠️</td>
+                      <td>Avisos importantes ou bloqueios no processo.</td>
+                      <td>Mensagem, Nível de Alerta</td>
+                    </tr>
+                    <tr>
+                      <td>E-mail</td>
+                      <td>📧</td>
+                      <td>Modelo pronto para envio de comunicações.</td>
+                      <td>Assunto, Corpo do E-mail</td>
+                    </tr>
+                    <tr>
+                      <td>Checklist</td>
+                      <td>✅</td>
+                      <td>Lista de verificação de itens obrigatórios.</td>
+                      <td>Itens da Lista</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="alert alert-warning">
+                <strong>⚠️ Dica de Especialista:</strong> Ao usar Decisão ou
+                Triagem, certifique-se de que todas as opções levam a uma
+                etapa válida ou ao "Fim do Fluxo" para evitar erros no
+                fluxograma.
+              </div>
+            </div>
+
+            <!-- Autocomplete -->
+            <div class="content-section">
+              <h2 class="section-title">⚡ Recurso de Autocomplete</h2>
+              <p>
+                O autocomplete é a ferramenta secreta para quem busca
+                velocidade. Ele permite inserir parágrafos inteiros apenas
+                digitando um atalho.
+              </p>
+
+              <div class="alert alert-success">
+                <strong>Como Ativar:</strong> Dentro de qualquer campo de
+                texto, digite a barra invertida <span class="kbd">\</span> e
+                comece a digitar o nome do seu atalho. Um menu suspenso
+                aparecerá com as sugestões.
+              </div>
+
+              <h3 class="section-subtitle">Gerenciando seus Atalhos</h3>
+              <ol>
+                <li>Acesse o menu <strong>⚙️ Configurações</strong>.</li>
+                <li>Clique em <strong>Gerenciar Atalhos</strong>.</li>
+                <li>
+                  Cadastre uma categoria (ex: "Cláusulas"), um nome curto (ex:
+                  "prazo") e o texto completo que deve ser inserido.
+                </li>
+                <li>
+                  Clique em <span class="badge">+ Adicionar Atalho</span> para
+                  salvar.
+                </li>
+              </ol>
+            </div>
+
+            <!-- Visualização -->
+            <div class="content-section">
+              <h2 class="section-title">👁️ Visualização e Exportação</h2>
+              <p>
+                O SEI PLUS oferece flexibilidade total na hora de consultar
+                seus processos:
+              </p>
+              <br />
+
+              <div class="card-grid">
+                <div class="card">
+                  <div class="card-title">📋 Modo Lista</div>
+                  <p>
+                    Ideal para o dia a dia. Mostra as instruções detalhadas,
+                    permite copiar textos com um clique e marcar itens do
+                    checklist.
+                  </p>
+                </div>
+                <div class="card">
+                  <div class="card-title">📊 Modo Fluxograma</div>
+                  <p>
+                    Gera um diagrama visual automático usando Mermaid.js.
+                    Perfeito para entender ramificações e decisões complexas.
+                  </p>
+                </div>
+              </div>
+
+              <div class="alert alert-info">
+                <strong>📥 Exportação:</strong> Você pode baixar o fluxograma
+                como imagem PNG clicando no botão de download na visualização
+                do fluxo.
+              </div>
+            </div>
+
+            <!-- Backup -->
+            <div class="content-section">
+              <h2 class="section-title">💾 Segurança dos Dados</h2>
+              <p>
+                Como o SEI PLUS funciona localmente, você é o dono dos seus
+                dados. Gerencie-os na aba de Configurações:
+              </p>
+
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Ação</th>
+                      <th>O que faz?</th>
+                      <th>Quando usar?</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>💾 Fazer Backup</td>
+                      <td>Gera um arquivo .json com todos os seus dados.</td>
+                      <td>Sempre! Faça backups regulares.</td>
+                    </tr>
+                    <tr>
+                      <td>📂 Restaurar</td>
+                      <td>Carrega dados de um arquivo de backup.</td>
+                      <td>Ao trocar de computador ou recuperar dados.</td>
+                    </tr>
+                    <tr>
+                      <td>📥 Mesclar Dados</td>
+                      <td>Adiciona novos fluxos sem apagar os atuais.</td>
+                      <td>Ao receber fluxos de colegas.</td>
+                    </tr>
+                    <tr>
+                      <td>🔄 Resetar Tudo</td>
+                      <td>Apaga tudo e volta ao estado original.</td>
+                      <td>Cuidado! Use apenas se quiser limpar tudo.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Novidades v2.0 -->
+            <div class="content-section">
+              <h2 class="section-title">🚀 Novidades da Versão 2.0</h2>
+              <div class="card-grid">
+                <div class="card">
+                  <div class="card-title">🔀 Fluxos Não Lineares</div>
+                  <p>
+                    Agora você pode criar bifurcações, loops e múltiplos caminhos independentes.
+                    Cada etapa controla explicitamente para onde o fluxo deve seguir.
+                  </p>
+                </div>
+                <div class="card">
+                  <div class="card-title">📄 Geração de PDF</div>
+                  <p>
+                    Selecione múltiplos fluxos na tela de processos e gere um documento PDF
+                    consolidado com todas as instruções e modelos de texto.
+                  </p>
+                </div>
+                <div class="card">
+                  <div class="card-title">🧠 Assistente de IA</div>
+                  <p>
+                    Use o poder do ChatGPT para encontrar fluxos e montar documentos.
+                    Configure sua chave API na aba de Configurações.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="content-section">
+              <h2 class="section-title">❓ Perguntas Frequentes</h2>
+
+              <div class="faq-item">
+                <div class="faq-question" onclick="ui.toggleFaq(this)">
+                  <span>O sistema precisa de internet para funcionar?</span>
+                  <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                  Não! Após o primeiro acesso, o SEI PLUS funciona totalmente
+                  offline. Seus dados nunca saem do seu computador, garantindo
+                  total privacidade e segurança. A internet só é necessária para o Assistente de IA.
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <div class="faq-question" onclick="ui.toggleFaq(this)">
+                  <span>Como compartilho um fluxo específico com um colega?</span>
+                  <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                  Vá na página <strong>📚 Processos</strong>, marque o
+                  checkbox do fluxo que deseja compartilhar e clique em
+                  <strong>Exportar Selecionados</strong>. Envie o arquivo
+                  gerado para seu colega, e ele poderá importar via
+                  Configurações.
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <div class="faq-question" onclick="ui.toggleFaq(this)">
+                  <span>Posso editar um fluxo depois de salvo?</span>
+                  <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                  Sim! Na lista de processos, clique no ícone do lápis ✏️ no
+                  card do fluxo. Isso carregará todo o processo no editor para
+                  que você possa fazer as alterações necessárias.
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <div class="faq-question" onclick="ui.toggleFaq(this)">
+                  <span>O que são as variáveis dinâmicas {nome}?</span>
+                  <span>▼</span>
+                </div>
+                <div class="faq-answer">
+                  São marcadores que você pode colocar nos textos. Quando você
+                  visualiza o fluxo, eles servem como lembretes de informações
+                  que precisam ser preenchidas manualmente naquele momento.
+                </div>
+              </div>
+            </div>
+
+            <!-- Dicas -->
+            <div class="content-section">
+              <h2 class="section-title">💡 Boas Práticas</h2>
+              <div class="comparison">
+                <div class="comparison-do">
+                  <h3>✅ Faça</h3>
+                  <ul>
+                    <li>Use nomes claros e objetivos para as etapas.</li>
+                    <li>
+                      Crie atalhos para textos longos de fundamentação legal.
+                    </li>
+                    <li>Faça backup semanalmente em local seguro.</li>
+                    <li>
+                      Use o Modo Fluxograma para validar a lógica do processo.
+                    </li>
+                  </ul>
+                </div>
+                <div class="comparison-dont">
+                  <h3>❌ Evite</h3>
+                  <ul>
+                    <li>
+                      Criar fluxos excessivamente longos (mais de 30 etapas).
+                    </li>
+                    <li>
+                      Esquecer de definir a "Próxima Etapa" em decisões.
+                    </li>
+                    <li>
+                      Limpar os dados do navegador sem ter um backup salvo.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Suporte -->
+            <div class="content-section" style="text-align: center">
+              <img src="logo.png" alt="Logo" style="width: 500px" />
+              <h2 class="section-title" style="justify-content: center">
+                📞 Suporte e Créditos
+              </h2>
+              <p>
+                Desenvolvido com excelência por <strong>OZEIAS SOUZA</strong>
+              </p>
+              <p>Versão 2.0 | Maio de 2026</p>
+              <p>(69) 9 9272-6386 | ozeeiiaass@gmail.com</p>
+              <div class="alert alert-success" style="justify-content: center">
+                <strong>Obrigado por usar o SEI PLUS!</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Config Page -->
+        <div id="page-config" class="page">
+          <div class="config-grid">
+            <div class="config-card">
+              <h3>💾 Dados</h3>
+              <p>Gerencie seus dados salvos</p>
+              <div class="config-actions">
+                <button class="btn btn-primary" id="btn-backup">
+                  Fazer Backup
+                </button>
+                <button class="btn btn-secondary" id="btn-restore">
+                  Restaurar
+                </button>
+                <button class="btn btn-danger" id="btn-reset">
+                  Resetar Tudo
+                </button>
+              </div>
+            </div>
+
+            <div class="config-card">
+              <h3>📥 Importar Dados</h3>
+              <p>Importe dados de um arquivo JSON</p>
+              <div class="config-actions">
+                <button class="btn btn-primary" id="btn-import-replace">
+                  Substituir Tudo
+                </button>
+                <button class="btn btn-secondary" id="btn-import-merge">
+                  Adicionar aos Existentes
+                </button>
+              </div>
+            </div>
+
+            <div class="config-card">
+              <h3>📊 Informações</h3>
+              <div class="info-list">
+                <div class="info-item">
+                  <span>Versão:</span>
+                  <strong>2.0</strong>
+                </div>
+                <div class="info-item">
+                  <span>Armazenamento:</span>
+                  <strong id="info-storage">localStorage</strong>
+                </div>
+                <div class="info-item">
+                  <span>Desenvolvido por:</span>
+                  <strong>OZEIAS SOUZA</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="config-card">
+              <h3>🎨 Tema</h3>
+              <p>Escolha o tema da aplicação</p>
+              <div class="theme-buttons">
+                <button class="btn btn-sm" id="btn-theme-light">
+                  ☀️ Claro
+                </button>
+                <button class="btn btn-sm" id="btn-theme-dark">
+                  🌙 Escuro
+                </button>
+                <button class="btn btn-sm" id="btn-theme-auto">
+                  🔄 Auto
+                </button>
+              </div>
+            </div>
+
+            <div class="config-card">
+              <h3>🔑 API ChatGPT</h3>
+              <p>Configure sua chave para a IA</p>
+              <div class="form-group">
+                <input type="password" id="openai-api-key" class="input" placeholder="sk-..." />
+              </div>
+              <div class="config-actions">
+                <button class="btn btn-primary" id="btn-save-api-key">
+                  Salvar Chave
+                </button>
+              </div>
+            </div>
+
+            <div class="config-card">
+              <h3>⚡ Autocomplete</h3>
+              <p>Gerencie atalhos para preenchimento rápido</p>
+              <div class="config-actions">
+                <button class="btn btn-primary" onclick="ui.goToPage('autocomplete')">
+                  Gerenciar Atalhos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Criação Page -->
+        <div id="page-criacao" class="page">
+          <div class="form-container">
+            <div class="form-section">
+              <h3>🌟 Assistente de Criação Inteligente</h3>
+              <div class="alert alert-info" style="margin-bottom: 20px">
+                <strong>⚡ Dica Rápida:</strong> Para usar o Assistente de
+                Criação Inteligente, você precisa de uma chave API do OpenAI:
+                <ol style="margin-left: 50px">
+                  <li>
+                    Acesse:
+                    <a href="https://platform.openai.com/api-keys"
+                      target="_blank">https://platform.openai.com/api-keys</a>
+                  </li>
+                  <li>
+                    Em Posse da chave, vá para Configurações → API ChatGPT
+                  </li>
+                  <li>Insira sua chave API</li>
+                </ol>
+              </div>
+              <p>
+                Descreva o que aconteceu ou o que você precisa, e a IA ajudará
+                a encontrar o fluxo correto e montar os documentos.
+              </p>
+              <div class="form-group">
+                <label>O que aconteceu?</label>
+                <textarea id="criacao-input" class="textarea" style="height: 150px"
+                  placeholder="Ex: Recebi um ofício da prefeitura pedindo ovos..."></textarea>
+              </div>
+              <button class="btn btn-primary btn-lg" id="btn-gerar-criacao">
+                ✨ Gerar Resposta
+              </button>
+            </div>
+
+            <div id="criacao-resultado" class="form-section" style="display: none">
+              <h3>💡 Sugestão da IA</h3>
+              <div id="criacao-resposta-texto" class="ai-response-container" style="
+                    white-space: pre-wrap;
+                    background: var(--bg-secondary);
+                    padding: 20px;
+                    border-radius: 8px;
+                    border-left: 4px solid var(--primary);
+                    margin-bottom: 20px;
+                  "></div>
+
+              <div id="criacao-documento-container" style="display: none">
+                <h3>📄 Documento Montado</h3>
+                <div id="criacao-documento-texto" class="document-preview" style="
+                      white-space: pre-wrap;
+                      background: #fff;
+                      color: #333;
+                      padding: 30px;
+                      border: 1px solid #ddd;
+                      border-radius: 4px;
+                      font-family: &quot;Courier New&quot;, Courier, monospace;
+                      margin-bottom: 20px;
+                    "></div>
+                <button class="btn btn-secondary" id="btn-copiar-documento">
+                  📋 Copiar Documento
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Autocomplete Page -->
+        <div id="page-autocomplete" class="page">
+          <div class="autocomplete-header">
+            <button class="btn btn-secondary" onclick="ui.goToPage('config')">
+              ← Voltar
+            </button>
+            <h2>⚡ Gerenciador de Autocomplete</h2>
+          </div>
+
+          <div class="autocomplete-container">
+            <div class="autocomplete-form">
+              <h3>Adicionar Novo Atalho</h3>
+              <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" class="input" id="autocomplete-categoria"
+                  placeholder="Ex: Diretores, Setores, Documentos" />
+              </div>
+              <div class="form-group">
+                <label>Nome do Atalho</label>
+                <input type="text" class="input" id="autocomplete-nome" placeholder="Ex: Diretor Geral" />
+              </div>
+              <div class="form-group">
+                <label>Descrição / Valor</label>
+                <textarea class="textarea" id="autocomplete-descricao" placeholder="Ex: Marcos Anequine"></textarea>
+              </div>
+              <button class="btn btn-primary" onclick="ui.addAutocompleteItem()">
+                + Adicionar Atalho
+              </button>
+            </div>
+
+            <div class="autocomplete-list">
+              <h3>Atalhos Cadastrados</h3>
+              <div id="autocomplete-items-container" class="autocomplete-items"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detalhes Page -->
+        <div id="page-detalhes" class="page">
+          <div class="detalhes-header">
+            <div style="display: flex; align-items: center; gap: 16px">
+              <button class="btn btn-secondary" id="btn-voltar-detalhes">
+                ← Voltar
+              </button>
+              <div>
+                <h2 id="detalhes-titulo"></h2>
+                <p id="detalhes-subtitulo"></p>
+              </div>
+            </div>
+            <div class="view-toggle">
+              <button class="btn btn-sm btn-secondary active" id="btn-view-lista">
+                📋 Lista
+              </button>
+              <button class="btn btn-sm btn-secondary" id="btn-view-fluxo">
+                📊 Fluxograma
+              </button>
+            </div>
+          </div>
+
+          <div class="detalhes-content">
+            <!-- View Lista -->
+            <div id="view-lista-container" class="view-container active">
+              <div class="etapas-sidebar">
+                <h4>Etapas</h4>
+                <div id="detalhes-etapas" class="etapas-nav"></div>
+              </div>
+              <div class="etapas-main">
+                <div id="etapa-viewer" class="etapa-viewer"></div>
+              </div>
+            </div>
+            <!-- View Fluxograma -->
+            <div id="view-fluxo-container" class="view-container">
+              <button id="btn-download-png" class="btn btn-primary"
+                style="width: 200px; text-align: center; align-items: center">
+                📥 Baixar PNG
+              </button>
+              <div class="fluxo-canvas">
+                <div id="mermaid-graph" class="mermaid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Input hidden para restore -->
+  <input type="file" id="file-restore" accept=".json" style="display: none" />
+  <!-- Input hidden para import -->
+  <input type="file" id="file-import" accept=".json" style="display: none" />
+
+  <script src="storage.js"></script>
+  <script src="ui.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
